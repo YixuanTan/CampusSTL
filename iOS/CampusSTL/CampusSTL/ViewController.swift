@@ -5,6 +5,12 @@
 //  Created by Terry on 3/2/16.
 //  Copyright © 2016 Rensselaer Polytechnic Institute. All rights reserved.
 //
+/*
+    userDefault = [ "timeRemaining":"0",
+                    "RIN":"meiyourin",
+                    "checkedInRoomId":"0",
+                    "numberOfRoomCheckedIn:"0"]
+*/
 
 import UIKit
 import SpriteKit
@@ -14,6 +20,7 @@ let serverURL = "52.90.85.173:3000"
 var timer = -1
 
 class ViewController: UIViewController {
+    
     let userDefault = NSUserDefaults.standardUserDefaults()
     var numberOfRoomCheckedIn = 0
     var checkedInRoomId = "0"
@@ -21,6 +28,8 @@ class ViewController: UIViewController {
     var floorButtons: [UIButton]!
     var allRoomData = NSMutableDictionary()//Dictionary<String, Dictionary<String, String> >()//roomNumber:[field: value]
     var floorShowing = 1
+    
+    @IBOutlet weak var RINLabel: UILabel!
     @IBAction func linkTapped(sender: UIButton) {
         openLink(sender.titleLabel!.text!)
     }
@@ -58,19 +67,48 @@ class ViewController: UIViewController {
     }
     
     @IBAction func refresh() {
-        //print(floorView.subviews.count)
+        //spinner?.startAnimating()
         removeAllRoomsFromCurrentFloor()
         readAllFromDatabase()
         while allRoomData.allKeys.count==0 {}
-        //UIView.animateWithDuration(0, delay: 10, options: [], animations: { () -> Void in
-        //    self.spinner?.stopAnimating()
-        //    }, completion: nil)
-         NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(0.2), target: self, selector: "stopSpinner", userInfo: nil, repeats: false)
+        NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(0.2), target: self, selector: "stopSpinner", userInfo: nil, repeats: false)
         loadFloor(floorShowing)
+        updateRINLabel()
+    }
+    
+    func updateRINLabel() {
+        let RIN = userDefault.stringForKey("RIN")
+        if RIN != nil {
+            if (RIN!) != "meiyourin" {
+                RINLabel.text = "You have checked in with RIN: \(RIN!)"
+            } else {
+                RINLabel.text = ""
+            }
+        } else {
+            RINLabel.text = ""
+        }
     }
     
     func stopSpinner() {
         spinner?.stopAnimating()
+    }
+    
+    func resetNumberOfRoomCheckedIn() {
+        print(userDefault.stringForKey("checkedInRoomId"))
+        if userDefault.stringForKey("checkedInRoomId") != nil {
+            checkedInRoomId = userDefault.stringForKey("checkedInRoomId")!
+            if let checkedInRoom = allRoomData[checkedInRoomId] as? NSDictionary {
+                if let didCheckIn = checkedInRoom["occupied"] as? String {
+                    if didCheckIn == "0" {
+                        userDefault.setObject("0", forKey: "numberOfRoomCheckedIn")
+                    }
+                }
+            } else if checkedInRoomId == "0" {
+                userDefault.setObject("0", forKey: "numberOfRoomCheckedIn")
+            }
+        } else if userDefault.stringForKey("checkedInRoomId")==nil {
+            userDefault.setObject("0", forKey: "numberOfRoomCheckedIn")
+        }
     }
     
     override func viewDidLoad() {
@@ -80,11 +118,11 @@ class ViewController: UIViewController {
         floorView.backgroundColor =  UIColor.grayColor()//UIColor(patternImage: UIImage(named: "chair.png")!)
         readAllFromDatabase()//should update data every 1min or so
         floorButtons = [floorOneButton, floorTwoButton, floorThreeButton, floorFourButton]
-        print("viewcontroller ------------------ \(userDefault)")
+        //print("viewcontroller ------------------ \(userDefault)")
         if let numberOfRoomCheckedInStr = userDefault.stringForKey("numberOfRoomCheckedIn") {
             numberOfRoomCheckedIn = Int(numberOfRoomCheckedInStr)!
         }
-        if let roomNumber = userDefault.stringForKey("roomNumber") {
+        if let roomNumber = userDefault.stringForKey("checkedInRoomId") {
             checkedInRoomId = roomNumber
         }
         if let timeRemaining = userDefault.stringForKey("timeRemaining") {
@@ -105,7 +143,7 @@ class ViewController: UIViewController {
     
     func countDown() {
         timer--
-        let roomNumber = userDefault.stringForKey("roomNumber")
+        let roomNumber = userDefault.stringForKey("checkedInRoomId")
         if timer == 1 {// should change back to 2
             let ac = UIAlertController(title: "2 minutes left", message: "Please check out or add time", preferredStyle: .Alert)
             ac.addAction(UIAlertAction(title: "Check out", style: .Default, handler: {(action)->Void  in
@@ -123,7 +161,7 @@ class ViewController: UIViewController {
     
     func automaticallyCheckout() {
         //yet to implement
-        let roomNumber = userDefault.stringForKey("roomNumber")!
+        let roomNumber = userDefault.stringForKey("checkedInRoomId")!
         let url = NSURL(string: "http://\(serverURL)/rooms/\(roomNumber)")
         print(url)
         let parameters = ["roomNumber":roomNumber,"occupied": "0","checkinTime":"-1","stayTime": "0","userId":"0"] as Dictionary<String, String>
@@ -146,7 +184,8 @@ class ViewController: UIViewController {
         task.resume()
         checkedInRoomId = "0"
         userDefault.setObject("0", forKey: "numberOfRoomCheckedIn")
-        userDefault.setObject("0", forKey: "roomNumber")
+        userDefault.setObject("0", forKey: "checkedInRoomId")
+        userDefault.setObject("meiyourin", forKey: "RIN")
         timer = -1
 
         let ac = UIAlertController(title: "Time is up", message: "You have been checked out", preferredStyle: .Alert)
@@ -281,9 +320,10 @@ class ViewController: UIViewController {
     }
     
     func readAllFromDatabase() {
-        UIView.animateWithDuration(2, animations: { () -> Void in
-            self.spinner?.startAnimating()
-        })
+        //UIView.animateWithDuration(2, animations: { () -> Void in
+        //    self.spinner?.startAnimating()
+        //})
+        spinner?.startAnimating()
         allRoomData.removeAllObjects()
         let url = NSURL(string: "http://\(serverURL)/rooms")
         let qos = Int(QOS_CLASS_USER_INITIATED.rawValue)
@@ -330,6 +370,7 @@ class ViewController: UIViewController {
         let roomNumber = sender as? String
         if let dvc = segue.destinationViewController as? CheckinViewController {
             if segue.identifier == "checkin" {
+                resetNumberOfRoomCheckedIn()
                 dvc.roomNumber = roomNumber
             }
         } else if let dvc = segue.destinationViewController as? addTimeViewController {

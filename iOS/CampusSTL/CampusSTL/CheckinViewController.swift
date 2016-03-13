@@ -29,8 +29,6 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         setSwitch()
         if let numberOfRoomCheckedInStr = userDefault.stringForKey("numberOfRoomCheckedIn") {
             numberOfRoomCheckedIn = Int(numberOfRoomCheckedInStr)!
-            print("checkinviewcontroller ----------------- \(userDefault)")
-            print("checkinviewcontroller ----------------- \(numberOfRoomCheckedIn)")
         }
     }
     
@@ -73,7 +71,8 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                             self.navigationController?.popViewControllerAnimated(true)
                             self.numberOfRoomCheckedIn++
                             self.userDefault.setObject("1", forKey: "numberOfRoomCheckedIn")
-                            self.userDefault.setObject(self.roomNumber, forKey: "roomNumber")
+                            self.userDefault.setObject(self.roomNumber, forKey: "checkedInRoomId")
+                            self.userDefault.setObject(self.RIN, forKey: "RIN")
                         }))
                         //ac2.addAction(UIAlertAction(title: "Re-enter RIN", style: .Default, handler: {(action)->Void in
                         //    self.checkinSwitch.on = true
@@ -81,7 +80,9 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                         self.presentViewController(ac2, animated: true, completion: nil)
                     }
                 }))
-                ac.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+                ac.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: {(action)->Void in
+                    self.navigationController?.popViewControllerAnimated(true)
+                }))
                 presentViewController(ac, animated: true, completion: {self.finish = true})
             }
             
@@ -108,7 +109,8 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                                 self.navigationController?.popViewControllerAnimated(true)
                                 self.numberOfRoomCheckedIn--
                                 self.userDefault.setObject("0", forKey: "numberOfRoomCheckedIn")
-                                self.userDefault.setObject("0", forKey: "roomNumber")
+                                self.userDefault.setObject("0", forKey: "checkedInRoomId")
+                                self.userDefault.setObject("meiyourin", forKey: "RIN")
                             }))
                             self.presentViewController(ac2, animated: true, completion: nil)
                         } else {
@@ -174,7 +176,7 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         }
         task.resume()
         //checkedInRoomId = self.roomNumber
-        userDefault.setObject(self.roomNumber, forKey: "roomNumber")
+        userDefault.setObject(self.roomNumber, forKey: "checkedInRoomId")
         timer = stayTime
         return true//should modify
     }
@@ -201,7 +203,7 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         }
         task.resume()
         //checkedInRoomId = "0"
-        userDefault.setObject("0", forKey: "roomNumber")
+        userDefault.setObject("0", forKey: "checkedInRoomId")
         timer = -1
         return true//should modified
     }

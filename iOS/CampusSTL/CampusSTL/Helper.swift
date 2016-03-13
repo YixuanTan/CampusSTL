@@ -37,6 +37,7 @@ func convertDatetoString(date: NSDate) -> String {
 }
 
 func convertStringtoDate(stringDate: String) -> NSDate {
+    print(stringDate)
     let dateFormatter = NSDateFormatter()
     dateFormatter.dateFormat = "yyyy:MM:dd:hh:mm" //format style. Browse online to get a format that fits your needs.
     return dateFormatter.dateFromString(stringDate)!
