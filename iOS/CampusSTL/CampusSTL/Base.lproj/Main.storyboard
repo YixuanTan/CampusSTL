@@ -114,6 +114,12 @@
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="51k-vo-wmk">
                                 <rect key="frame" x="282" y="346" width="37" height="37"/>
                             </activityIndicatorView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JCK-ZF-1Gy">
+                                <rect key="frame" x="75" y="72" width="42" height="20.5"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -125,9 +131,11 @@
                             <constraint firstItem="io5-3F-4eX" firstAttribute="top" secondItem="0d3-Et-9T6" secondAttribute="bottom" constant="8" symbolic="YES" id="8Y9-Ic-U1r"/>
                             <constraint firstItem="51k-vo-wmk" firstAttribute="centerY" secondItem="IBn-My-eBb" secondAttribute="centerY" id="9TP-H6-bib"/>
                             <constraint firstItem="IBn-My-eBb" firstAttribute="top" secondItem="fxj-AA-ktT" secondAttribute="bottom" constant="17" id="Ado-vc-GMS"/>
+                            <constraint firstItem="JM2-ph-6Nu" firstAttribute="leading" secondItem="JCK-ZF-1Gy" secondAttribute="trailing" constant="8" symbolic="YES" id="C0H-bp-yZv"/>
                             <constraint firstItem="YGz-BN-QbR" firstAttribute="width" secondItem="wxh-V3-LB2" secondAttribute="width" id="CUt-Tk-uaU"/>
                             <constraint firstItem="wxh-V3-LB2" firstAttribute="baseline" secondItem="fxj-AA-ktT" secondAttribute="baseline" id="DbB-jf-oY5"/>
                             <constraint firstItem="YGz-BN-QbR" firstAttribute="leading" secondItem="gjB-De-mWR" secondAttribute="trailing" constant="35" id="EHh-Ce-Ega"/>
+                            <constraint firstItem="JCK-ZF-1Gy" firstAttribute="leading" secondItem="fxj-AA-ktT" secondAttribute="trailing" constant="8" symbolic="YES" id="EUs-dQ-sLZ"/>
                             <constraint firstItem="XZ9-dp-29Z" firstAttribute="top" secondItem="IBn-My-eBb" secondAttribute="bottom" constant="20" id="HyS-wL-gdT"/>
                             <constraint firstAttribute="trailingMargin" secondItem="wxh-V3-LB2" secondAttribute="trailing" constant="91" id="MWQ-En-D6Y"/>
                             <constraint firstAttribute="trailingMargin" secondItem="IBn-My-eBb" secondAttribute="trailing" id="Mza-Of-5cM"/>
@@ -141,6 +149,7 @@
                             <constraint firstItem="JM2-ph-6Nu" firstAttribute="baseline" secondItem="DNc-Tc-wne" secondAttribute="baseline" id="lBC-X5-Eso"/>
                             <constraint firstItem="gjB-De-mWR" firstAttribute="width" secondItem="YGz-BN-QbR" secondAttribute="width" id="pSW-tq-i8I"/>
                             <constraint firstItem="YGz-BN-QbR" firstAttribute="baseline" secondItem="wxh-V3-LB2" secondAttribute="baseline" id="qUv-ZD-LjL"/>
+                            <constraint firstItem="JCK-ZF-1Gy" firstAttribute="top" secondItem="0d3-Et-9T6" secondAttribute="bottom" constant="8" symbolic="YES" id="riy-Cg-1yd"/>
                             <constraint firstItem="io5-3F-4eX" firstAttribute="leading" secondItem="DNc-Tc-wne" secondAttribute="trailing" constant="8" symbolic="YES" id="rn8-xZ-GeL"/>
                             <constraint firstItem="51k-vo-wmk" firstAttribute="centerX" secondItem="IBn-My-eBb" secondAttribute="centerX" id="tQw-iJ-W9a"/>
                             <constraint firstItem="N4I-m8-228" firstAttribute="centerY" secondItem="wxh-V3-LB2" secondAttribute="centerY" id="xbA-6P-far"/>
@@ -148,12 +157,14 @@
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
+                                <exclude reference="C0H-bp-yZv"/>
                                 <exclude reference="88E-tg-1FF"/>
                             </mask>
                         </variation>
                     </view>
                     <navigationItem key="navigationItem" title="CampusSTL" id="otF-xC-jZ6"/>
                     <connections>
+                        <outlet property="RINLabel" destination="JCK-ZF-1Gy" id="mYN-Hu-89C"/>
                         <outlet property="floorFourButton" destination="wxh-V3-LB2" id="aXZ-yg-MfX"/>
                         <outlet property="floorOneButton" destination="WHP-ep-we6" id="IU0-Y4-2gL"/>
                         <outlet property="floorThreeButton" destination="YGz-BN-QbR" id="NML-5i-udl"/>
