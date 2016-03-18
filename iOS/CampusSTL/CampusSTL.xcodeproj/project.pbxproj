@@ -8,6 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		E52BC1141C895B7F00C25A25 /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52BC1131C895B7F00C25A25 /* Helper.swift */; };
+		E59683621C98E3990048C828 /* Room.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59683611C98E3990048C828 /* Room.swift */; };
+		E59683641C98E5900048C828 /* Floor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59683631C98E5900048C828 /* Floor.swift */; };
+		E59683661C98E5E20048C828 /* Building.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59683651C98E5E20048C828 /* Building.swift */; };
+		E59683681C9A79460048C828 /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59683671C9A79460048C828 /* Person.swift */; };
+		E596836A1C9B86AE0048C828 /* water.png in Resources */ = {isa = PBXBuildFile; fileRef = E59683691C9B86AE0048C828 /* water.png */; };
+		E596836C1C9B97120048C828 /* food.png in Resources */ = {isa = PBXBuildFile; fileRef = E596836B1C9B97120048C828 /* food.png */; };
+		E596836E1C9B98C10048C828 /* frontDesk.png in Resources */ = {isa = PBXBuildFile; fileRef = E596836D1C9B98C10048C828 /* frontDesk.png */; };
+		E59683701C9B99D70048C828 /* entrance.png in Resources */ = {isa = PBXBuildFile; fileRef = E596836F1C9B99D70048C828 /* entrance.png */; };
 		E5B39DBA1C8D746C00FAA845 /* chair.png in Resources */ = {isa = PBXBuildFile; fileRef = E5B39DB11C8D746C00FAA845 /* chair.png */; };
 		E5B39DBB1C8D746C00FAA845 /* elevator.png in Resources */ = {isa = PBXBuildFile; fileRef = E5B39DB21C8D746C00FAA845 /* elevator.png */; };
 		E5B39DBC1C8D746C00FAA845 /* floor1.txt in Resources */ = {isa = PBXBuildFile; fileRef = E5B39DB31C8D746C00FAA845 /* floor1.txt */; };
@@ -28,6 +36,14 @@
 
 /* Begin PBXFileReference section */
 		E52BC1131C895B7F00C25A25 /* Helper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
+		E59683611C98E3990048C828 /* Room.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Room.swift; sourceTree = "<group>"; };
+		E59683631C98E5900048C828 /* Floor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Floor.swift; sourceTree = "<group>"; };
+		E59683651C98E5E20048C828 /* Building.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Building.swift; sourceTree = "<group>"; };
+		E59683671C9A79460048C828 /* Person.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
+		E59683691C9B86AE0048C828 /* water.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = water.png; sourceTree = "<group>"; };
+		E596836B1C9B97120048C828 /* food.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = food.png; sourceTree = "<group>"; };
+		E596836D1C9B98C10048C828 /* frontDesk.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = frontDesk.png; sourceTree = "<group>"; };
+		E596836F1C9B99D70048C828 /* entrance.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = entrance.png; sourceTree = "<group>"; };
 		E5B39DB11C8D746C00FAA845 /* chair.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = chair.png; sourceTree = "<group>"; };
 		E5B39DB21C8D746C00FAA845 /* elevator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = elevator.png; sourceTree = "<group>"; };
 		E5B39DB31C8D746C00FAA845 /* floor1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = floor1.txt; sourceTree = "<group>"; };
@@ -64,13 +80,17 @@
 			children = (
 				E5B39DB11C8D746C00FAA845 /* chair.png */,
 				E5B39DB21C8D746C00FAA845 /* elevator.png */,
+				E596836B1C9B97120048C828 /* food.png */,
+				E596836F1C9B99D70048C828 /* entrance.png */,
 				E5B39DB31C8D746C00FAA845 /* floor1.txt */,
 				E5B39DB41C8D746C00FAA845 /* floor2.txt */,
 				E5B39DB51C8D746C00FAA845 /* floor3.txt */,
 				E5B39DB61C8D746C00FAA845 /* floor4.txt */,
+				E596836D1C9B98C10048C828 /* frontDesk.png */,
 				E5B39DB71C8D746C00FAA845 /* refresh.png */,
 				E5B39DB81C8D746C00FAA845 /* restroom.png */,
 				E5B39DB91C8D746C00FAA845 /* study.png */,
+				E59683691C9B86AE0048C828 /* water.png */,
 			);
 			path = Content;
 			sourceTree = "<group>";
@@ -98,8 +118,12 @@
 				E5D542101C8791A0006A1CFD /* ViewController.swift */,
 				E5D5426C1C889F4C006A1CFD /* CheckinViewController.swift */,
 				E5B39DC31C940F2600FAA845 /* addTimeViewController.swift */,
-				E5D542121C8791A0006A1CFD /* Main.storyboard */,
 				E52BC1131C895B7F00C25A25 /* Helper.swift */,
+				E59683671C9A79460048C828 /* Person.swift */,
+				E59683611C98E3990048C828 /* Room.swift */,
+				E59683631C98E5900048C828 /* Floor.swift */,
+				E59683651C98E5E20048C828 /* Building.swift */,
+				E5D542121C8791A0006A1CFD /* Main.storyboard */,
 				E5D542151C8791A0006A1CFD /* Assets.xcassets */,
 				E5D542171C8791A0006A1CFD /* LaunchScreen.storyboard */,
 				E5D5420E1C8791A0006A1CFD /* AppDelegate.swift */,
@@ -168,17 +192,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				E5D542191C8791A0006A1CFD /* LaunchScreen.storyboard in Resources */,
+				E596836E1C9B98C10048C828 /* frontDesk.png in Resources */,
 				E5B39DC21C8D746C00FAA845 /* study.png in Resources */,
 				E5B39DBB1C8D746C00FAA845 /* elevator.png in Resources */,
 				E5B39DC11C8D746C00FAA845 /* restroom.png in Resources */,
 				E5D542161C8791A0006A1CFD /* Assets.xcassets in Resources */,
+				E596836A1C9B86AE0048C828 /* water.png in Resources */,
 				E5D542141C8791A0006A1CFD /* Main.storyboard in Resources */,
 				E5B39DBD1C8D746C00FAA845 /* floor2.txt in Resources */,
 				E5B39DBE1C8D746C00FAA845 /* floor3.txt in Resources */,
 				E5B39DBA1C8D746C00FAA845 /* chair.png in Resources */,
 				E5B39DBC1C8D746C00FAA845 /* floor1.txt in Resources */,
+				E596836C1C9B97120048C828 /* food.png in Resources */,
 				E5B39DBF1C8D746C00FAA845 /* floor4.txt in Resources */,
 				E5B39DC01C8D746C00FAA845 /* refresh.png in Resources */,
+				E59683701C9B99D70048C828 /* entrance.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,9 +219,13 @@
 			files = (
 				E5D542111C8791A0006A1CFD /* ViewController.swift in Sources */,
 				E5D5426D1C889F4C006A1CFD /* CheckinViewController.swift in Sources */,
+				E59683621C98E3990048C828 /* Room.swift in Sources */,
+				E59683641C98E5900048C828 /* Floor.swift in Sources */,
 				E5D5420F1C8791A0006A1CFD /* AppDelegate.swift in Sources */,
 				E5B39DC41C940F2600FAA845 /* addTimeViewController.swift in Sources */,
+				E59683681C9A79460048C828 /* Person.swift in Sources */,
 				E52BC1141C895B7F00C25A25 /* Helper.swift in Sources */,
+				E59683661C98E5E20048C828 /* Building.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

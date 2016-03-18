@@ -60,7 +60,7 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
             } else {
                 let ac = UIAlertController(title: "PIN", message: "Please enter your RIN to check in", preferredStyle: .Alert)
                 ac.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-                    textField.text = "RIN"
+                    textField.text = ""
                 })
                 ac.addAction(UIAlertAction(title: "Enter", style: .Default, handler: {[unowned self] (action)->Void in
                     let textField = ac.textFields![0] as UITextField
@@ -91,7 +91,7 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
             if let roomInfo = readOneRoomFromDatabase(url!) {
                 let ac = UIAlertController(title: "Check out", message: "Please enter your RIN to check out", preferredStyle: .Alert)
                 ac.addTextFieldWithConfigurationHandler({ (textField) -> Void in
-                    textField.text = "RIN"
+                    textField.text = ""
                 })
                 ac.addAction(UIAlertAction(title: "Enter", style: .Default, handler: {[unowned self] (action)->Void in
                     let textField = ac.textFields![0] as UITextField
