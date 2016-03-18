@@ -16,25 +16,39 @@ import UIKit
 import SpriteKit
 
 let serverURL = "52.90.85.173:3000"
-//let serverURL = "192.168.0.103:3000"
 var timer = -1
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIScrollViewDelegate {
     
     let userDefault = NSUserDefaults.standardUserDefaults()
     var numberOfRoomCheckedIn = 0
-    var checkedInRoomId = "0"
+    var checkedInRoomId = "0"//in checkedInRoom
     var clock = NSTimer()
     var floorButtons: [UIButton]!
     var allRoomData = NSMutableDictionary()//Dictionary<String, Dictionary<String, String> >()//roomNumber:[field: value]
     var floorShowing = 1
+    var checkedInRoom = Room()
+    var library = Building()
+    var user = Person()
+    
+    @IBOutlet weak var floorView: UIView!
     
     @IBOutlet weak var RINLabel: UILabel!
     @IBAction func linkTapped(sender: UIButton) {
         openLink(sender.titleLabel!.text!)
     }
     
-    @IBOutlet weak var floorView: UIView!
+    @IBOutlet weak var scrollView: UIScrollView! {
+        didSet {
+            scrollView.contentSize = floorView.frame.size
+            scrollView.delegate = self //declare delegation
+            scrollView.maximumZoomScale = 2.0
+            scrollView.minimumZoomScale = 1
+        }
+
+    }
+    
+    
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     
     @IBOutlet weak var floorOneButton: UIButton!
@@ -46,18 +60,15 @@ class ViewController: UIViewController {
         switch sender.titleLabel!.text! {
             case "Floor 1":
                 floorShowing = 1
-                refresh()
             case "Floor 2":
                 floorShowing = 2
-                refresh()
             case "Floor 3":
                 floorShowing = 3
-                refresh()
             case "Floor 4":
                 floorShowing = 4
-                refresh()
             default: break
         }
+        refresh()
         for oneFloorButton in floorButtons! {
             oneFloorButton.backgroundColor = UIColor.whiteColor()
             oneFloorButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
@@ -67,7 +78,6 @@ class ViewController: UIViewController {
     }
     
     @IBAction func refresh() {
-        //spinner?.startAnimating()
         removeAllRoomsFromCurrentFloor()
         readAllFromDatabase()
         while allRoomData.allKeys.count==0 {}
@@ -75,6 +85,26 @@ class ViewController: UIViewController {
         loadFloor(floorShowing)
         updateRINLabel()
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        scrollView.addSubview(floorView)
+        floorView.backgroundColor =  UIColor.grayColor()//UIColor(patternImage: UIImage(named: "chair.png")!)
+        readAllFromDatabase()//should update data every 1min or so
+        floorButtons = [floorOneButton, floorTwoButton, floorThreeButton, floorFourButton]
+        if let numberOfRoomCheckedInStr = userDefault.stringForKey("numberOfRoomCheckedIn") {
+            numberOfRoomCheckedIn = Int(numberOfRoomCheckedInStr)!
+        }
+        if let roomNumber = userDefault.stringForKey("checkedInRoomId") {
+            checkedInRoomId = roomNumber
+        }
+        if let timeRemaining = userDefault.stringForKey("timeRemaining") {
+            timer = Int(timeRemaining)!
+        }
+        
+        clock = NSTimer.scheduledTimerWithTimeInterval(60.0, target: self, selector: "countDown", userInfo: nil, repeats: true)
+    }
+
     
     func updateRINLabel() {
         let RIN = userDefault.stringForKey("RIN")
@@ -93,6 +123,10 @@ class ViewController: UIViewController {
         spinner?.stopAnimating()
     }
     
+    func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
+        return floorView
+    }
+    
     func resetNumberOfRoomCheckedIn() {
         print(userDefault.stringForKey("checkedInRoomId"))
         if userDefault.stringForKey("checkedInRoomId") != nil {
@@ -109,31 +143,6 @@ class ViewController: UIViewController {
         } else if userDefault.stringForKey("checkedInRoomId")==nil {
             userDefault.setObject("0", forKey: "numberOfRoomCheckedIn")
         }
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        //view.accessibilityIdentifier = "FloorView"
-        //Do any additional setup after loading the view, typically from a nib.
-        floorView.backgroundColor =  UIColor.grayColor()//UIColor(patternImage: UIImage(named: "chair.png")!)
-        readAllFromDatabase()//should update data every 1min or so
-        floorButtons = [floorOneButton, floorTwoButton, floorThreeButton, floorFourButton]
-        //print("viewcontroller ------------------ \(userDefault)")
-        if let numberOfRoomCheckedInStr = userDefault.stringForKey("numberOfRoomCheckedIn") {
-            numberOfRoomCheckedIn = Int(numberOfRoomCheckedInStr)!
-        }
-        if let roomNumber = userDefault.stringForKey("checkedInRoomId") {
-            checkedInRoomId = roomNumber
-        }
-        if let timeRemaining = userDefault.stringForKey("timeRemaining") {
-            timer = Int(timeRemaining)!
-        }
-        clock = NSTimer.scheduledTimerWithTimeInterval(60.0, target: self, selector: "countDown", userInfo: nil, repeats: true)
-    }
-    
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-        //refresh()
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -195,17 +204,59 @@ class ViewController: UIViewController {
         presentViewController(ac, animated: true, completion: nil)
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        let touch = touches.first! as UITouch
-        let touchLocation = touch.locationInView(floorView)
+
+    @IBAction func roomDidTapped(sender: UITapGestureRecognizer) {
+        print("touched")
+        let touchLocation = sender.locationOfTouch(0, inView: floorView)
         for oneRoom in floorView.subviews {
             let oneRoomFrame = oneRoom.frame//view.convertRect(oneRoom.frame, fromView: )
-            //print(floorView.subviews.count)
-            //print(oneRoom.frame.origin)
             if CGRectContainsPoint(oneRoomFrame, touchLocation) {
                 let roomNumber = oneRoom.accessibilityIdentifier
                 if roomNumber != nil {
                     switch roomNumber! {
+                    case "restroom":
+                        let ac = UIAlertController(title: "It's the restroom", message: "No need to checkin the restroom", preferredStyle: .Alert)
+                        ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+                        presentViewController(ac, animated: true, completion: nil)
+                    case "elevator":
+                        let ac = UIAlertController(title: "It's an elevator", message: "No need to checkin the elevator", preferredStyle: .Alert)
+                        ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+                        presentViewController(ac, animated: true, completion: nil)
+                    case "food":
+                        let ac = UIAlertController(title: "Cafe", message: "Food and drinks are served here!", preferredStyle: .Alert)
+                        ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+                        presentViewController(ac, animated: true, completion: nil)
+                    case "entr":
+                        let ac = UIAlertController(title: "Library Entrance", message: "Welcome to Folsom Library!", preferredStyle: .Alert)
+                        ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+                        presentViewController(ac, animated: true, completion: nil)
+                    case "info":
+                        let ac = UIAlertController(title: "Front Desk", message: "Borrow books or look for help here", preferredStyle: .Alert)
+                        ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+                        presentViewController(ac, animated: true, completion: nil)
+                    default: performSegueWithIdentifier("checkin", sender: oneRoom.accessibilityIdentifier)
+                        
+                    }
+                }
+            } else {
+                //do nothing
+            }
+        }
+        
+
+    }
+    
+    @IBAction func didLongPress(sender: UILongPressGestureRecognizer) {
+        if (sender.state == .Began) {
+            print("long pressed")
+            let touchLocation = sender.locationOfTouch(0, inView: floorView)
+            
+            for oneRoom in floorView.subviews {
+                let oneRoomFrame = oneRoom.frame
+                if CGRectContainsPoint(oneRoomFrame, touchLocation) {
+                    let roomNumber = oneRoom.accessibilityIdentifier
+                    if roomNumber != nil {
+                        switch roomNumber! {
                         case "-1":
                             let ac = UIAlertController(title: "It's the restroom", message: "No need to checkin the restroom", preferredStyle: .Alert)
                             ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
@@ -215,104 +266,133 @@ class ViewController: UIViewController {
                             ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
                             presentViewController(ac, animated: true, completion: nil)
                         default: performSegueWithIdentifier("checkin", sender: oneRoom.accessibilityIdentifier)
-
+                            
+                        }
+                    }
+                } else {
+                    //do nothing
                 }
-                }
-            } else {
-                //do nothing
             }
         }
         
+        
+
     }
     
     func loadFloor(floor: Int) {
         if floor == 0 {
             return
         }
+        scrollView.zoomScale = 1
         let floorWidth = floorView.frame.width
         let floorHeight = floorView.frame.height
-        let roomHeight = (floorHeight-10)/4-5
-        let roomWidth = (floorWidth-10)/6-5
-        if let floorPath = NSBundle.mainBundle().pathForResource("floor\(floor)", ofType: "txt") {
+        if let floorPath = NSBundle.mainBundle().pathForResource(CONSTANTS.floorPlanFilePrefix+"\(floor)", ofType: "txt") {
             if let floorString = try? String(contentsOfFile: floorPath, usedEncoding: nil) {
                 let lines = floorString.componentsSeparatedByString("\n")
-                for (row, line) in lines.reverse().enumerate() {
-                    for (column, letter) in line.characters.enumerate() {
-                        let position = CGPoint(x: (roomWidth+5)*CGFloat(column)+5, y: (roomHeight+5)*CGFloat(row)+5)//+floorView.frame.origin.y)
+                let maxNumberOfRoomsInAColume = CGFloat(lines.count)
+                let maxNumberOfRoomsInARow = getLengthOfLongestRowOfMatrix(lines)
+                let roomHeight = (floorHeight-4)/maxNumberOfRoomsInAColume-2
+                let roomWidth = (floorWidth-4)/maxNumberOfRoomsInARow-2
+                for (row, line) in lines.enumerate() {
+                    for (column, oneRoomId) in line.componentsSeparatedByString(" ").enumerate() {
+                        let position = CGPoint(x: (roomWidth+2)*CGFloat(column)+2, y: (roomHeight+2)*CGFloat(row)+2)//+floorView.frame.origin.y)
                         let roomView = UIView(frame: CGRect(origin: position, size: CGSize(width: roomWidth, height: roomHeight)))
-                        let roomNumber = UILabel(frame: CGRect(origin: CGPoint(x: 2, y: 2), size: CGSize(width: roomWidth-5, height: 10)))
-                        roomNumber.text = "\(floor)\(row)\(column)"//should read from table
+                        let roomNumber = UILabel(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: roomWidth, height: CGFloat(roomHeight/3))))
+                        roomNumber.text = oneRoomId//should read from table
                         roomNumber.textAlignment = .Right
-                        roomNumber.font = roomNumber.font.fontWithSize(8)
-                        if letter == "s" {
-                            roomView.backgroundColor =  UIColor.greenColor()//UIColor(patternImage: UIImage(named: "study.png")!)
+                        roomNumber.font = roomNumber.font.fontWithSize(CGFloat(roomHeight/3.5))
+                        switch oneRoomId {
+                            case "rrrr":
+                                let roomImageView = UIImageView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: roomView.frame.size))
+                                let roomImage = UIImage(named: "restroom.png")
+                                roomImageView.image = roomImage
+                                roomView.addSubview(roomImageView)
+                                roomView.accessibilityIdentifier = "restroom"
+                                //roomView.backgroundColor =  UIColor(patternImage: UIImage(named: "logo.png")!)
+                            case "eeee":
+                                let roomImageView = UIImageView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: roomView.frame.size))
+                                let roomImage = UIImage(named: "elevator.png")
+                                roomImageView.image = roomImage
+                                roomView.addSubview(roomImageView)
+                                roomView.accessibilityIdentifier = "elevator"
+                            case "dddd":
+                                break
+                            case "xxxx":
+                                break
+                            case "xxxxx":
+                                break
+                            case "food":
+                                let roomImageView = UIImageView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: roomView.frame.size))
+                                let roomImage = UIImage(named: "food.png")
+                                roomImageView.image = roomImage
+                                roomView.addSubview(roomImageView)
+                                roomView.accessibilityIdentifier = "food"
+                            case "info":
+                                let roomImageView = UIImageView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: roomView.frame.size))
+                                let roomImage = UIImage(named: "frontDesk.png")
+                                roomImageView.image = roomImage
+                                roomView.addSubview(roomImageView)
+                                roomView.accessibilityIdentifier = "info"
+                            case "entr":
+                                let roomImageView = UIImageView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: roomView.frame.size))
+                                let roomImage = UIImage(named: "entrance.png")
+                                roomImageView.image = roomImage
+                                roomView.addSubview(roomImageView)
+                                roomView.accessibilityIdentifier = "entr"
+                            default:
+                                roomView.backgroundColor =  UIColor.greenColor()//UIColor(patternImage: UIImage(named: "study.png")!)
                             //print("found study")
-                            if let roomInfo = allRoomData[roomNumber.text!] as? NSDictionary {
-                                if let accomodationStr = roomInfo["capacity"] as? String {//read in from database
-                                //let chair = UIImage(named: "chair")
-                                    if let accomodation = Int(accomodationStr) {
-                                        for i in 0 ..< accomodation {
-                                            let chairView = UIImageView(frame: CGRect(origin: CGPoint(x: 6*i+1, y: 12), size: CGSize(width: 5, height: 10)))
-                                            //chairView.image = chair
-                                            chairView.backgroundColor = UIColor.purpleColor()
-                                            roomView.addSubview(chairView)
+                                if let roomInfo = allRoomData[roomNumber.text!] as? NSDictionary {
+                                    if let accomodationStr = roomInfo["capacity"] as? String {//read in from database
+                                    //let chair = UIImage(named: "chair")
+                                        if let accomodation = Int(accomodationStr) {
+                                            let chairViewWidth = roomView.frame.size.width/8
+                                            let chairViewHeight = roomView.frame.size.height/CGFloat(4)
+                                            for i in 0 ..< accomodation {
+                                                let chairView = UIImageView(frame: CGRect(origin: CGPoint(x: (Int(chairViewWidth)+2)*i+1, y: Int(chairViewHeight*1.5)), size: CGSize(width: chairViewWidth, height: chairViewHeight)))
+                                                //chairView.image = chair
+                                                chairView.backgroundColor = UIColor.purpleColor()
+                                                roomView.addSubview(chairView)
+                                            }
                                         }
                                     }
-                                }
                                 //print(allRoomData[roomNumber.text!])
-                                if let isOccupied = roomInfo["occupied"] as? String {
-                                    if isOccupied == "1" {
-                                        roomView.backgroundColor = UIColor.redColor()
-                                    }
-                                }
-                                let availableTill = UILabel(frame: CGRect(origin: CGPoint(x: 2, y: roomView.frame.size.height - 10), size: CGSize(width: roomWidth, height: 10)))
-                                if let stayTimeStr = roomInfo["stayTime"] as? String {
-                                    if let checkinTimeStr = roomInfo["checkinTime"] as? String {
-                                        if checkinTimeStr == "-1" {
-                                            availableTill.text = "Available Now"
-                                        } else {
-                                            let checkinTime = convertStringtoDate(checkinTimeStr)
-                                            let stayTime = Int(stayTimeStr)!
-                                            let calendar = NSCalendar.currentCalendar()
-                                            let components = NSDateComponents()
-                                            components.minute = stayTime
-                                            let timeToLeave = calendar.dateByAddingComponents(components, toDate: checkinTime, options: [])
-                                            
-                                            let comp = calendar.components([.Month, .Day, .Hour, .Minute], fromDate: timeToLeave!)
-                                            let month = comp.month
-                                            let day = comp.day
-                                            let hour = comp.hour
-                                            let minutes = comp.minute
-                                            availableTill.text = "Till \(hour):\(minutes) (\(month)/\(day))"//should read from database
+                                    if let isOccupied = roomInfo["occupied"] as? String {
+                                        if isOccupied == "1" {
+                                            roomView.backgroundColor = UIColor.redColor()
                                         }
-                                        availableTill.textAlignment = .Left
-                                        availableTill.font = availableTill.font.fontWithSize(8)
                                     }
+                                    let availableTill = UILabel(frame: CGRect(origin: CGPoint(x: 0, y: roomHeight - roomHeight/3), size: CGSize(width: roomWidth, height: CGFloat(roomHeight/3))))
+                                    if let stayTimeStr = roomInfo["stayTime"] as? String {
+                                        if let checkinTimeStr = roomInfo["checkinTime"] as? String {
+                                            if checkinTimeStr == "-1" {
+                                                availableTill.text = "Avail. Now"
+                                            } else {
+                                                let checkinTime = convertStringtoDate(checkinTimeStr)
+                                                let stayTime = Int(stayTimeStr)!
+                                                let calendar = NSCalendar.currentCalendar()
+                                                let components = NSDateComponents()
+                                                components.minute = stayTime
+                                                let timeToLeave = calendar.dateByAddingComponents(components, toDate: checkinTime, options: [])
+                                                
+                                                let comp = calendar.components([.Month, .Day, .Hour, .Minute], fromDate: timeToLeave!)
+                                                //let month = comp.month
+                                                //let day = comp.day
+                                                let hour = comp.hour
+                                                let minutes = comp.minute
+                                                //availableTill.text = "Till \(hour):\(minutes) (\(month)/\(day))"
+                                                availableTill.text = "Till \(hour):\(minutes)"
+                                            }
+                                            availableTill.textAlignment = .Left
+                                            availableTill.font = availableTill.font.fontWithSize(roomHeight/3.5)
+                                        }
+                                    }
+                                    roomView.addSubview(roomNumber)
+                                    roomView.addSubview(availableTill)
+                                    roomView.accessibilityIdentifier = roomNumber.text!
                                 }
-                                roomView.addSubview(roomNumber)
-                                roomView.addSubview(availableTill)
-                                roomView.accessibilityIdentifier = roomNumber.text!
-
-                            }
-                        } else if letter == "r" {
-                            let roomImageView = UIImageView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: roomView.frame.size))
-                            let roomImage = UIImage(named: "restroom.png")
-                            roomImageView.image = roomImage
-                            roomView.addSubview(roomImageView)
-                            roomView.accessibilityIdentifier = "-1"
-                            //roomView.backgroundColor =  UIColor(patternImage: UIImage(named: "logo.png")!)
-                        } else if letter == "e" {
-                            let roomImageView = UIImageView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: roomView.frame.size))
-                            let roomImage = UIImage(named: "elevator.png")
-                            roomImageView.image = roomImage
-                            roomView.addSubview(roomImageView)
-                            roomView.accessibilityIdentifier = "-2"
-
-                        } else {
-                            continue
                         }
                         floorView.addSubview(roomView)
-                        //print("added roomview to floorview")
                     }
                 }
             }
@@ -320,10 +400,9 @@ class ViewController: UIViewController {
     }
     
     func readAllFromDatabase() {
-        //UIView.animateWithDuration(2, animations: { () -> Void in
-        //    self.spinner?.startAnimating()
-        //})
-        spinner?.startAnimating()
+        UIView.animateWithDuration(2, animations: { () -> Void in
+            self.spinner?.startAnimating()
+        })
         allRoomData.removeAllObjects()
         let url = NSURL(string: "http://\(serverURL)/rooms")
         let qos = Int(QOS_CLASS_USER_INITIATED.rawValue)
