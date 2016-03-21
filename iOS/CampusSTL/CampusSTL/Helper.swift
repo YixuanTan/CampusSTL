@@ -13,6 +13,7 @@ struct CONSTANTS {
     static let numberOfFloorsInBuilding = 4
     static let floorPlanFilePrefix = "floor"
     static let roomIdFileOfEachFloorPrefix = "room"
+    static let alertTimeLeft = 1
 }
 
 func readAllRoomsFromDatabase(serverURL: NSURL) -> NSArray? {
@@ -58,4 +59,25 @@ func getLengthOfLongestRowOfMatrix(lines: [String]) -> CGFloat {
         }
     }
     return CGFloat(maxLength)
+}
+
+extension NSDate {
+    func addMinutes(minutesToAdd: Int) -> NSDate {
+        let secondsInMinutes: NSTimeInterval = Double(minutesToAdd) * 60
+        let dateWithMinutesAdded: NSDate = self.dateByAddingTimeInterval(secondsInMinutes)
+        return dateWithMinutesAdded
+    }
+}
+
+extension String {
+    func toBool() -> Bool? {
+        switch self {
+        case "True", "true", "yes", "1":
+            return true
+        case "False", "false", "no", "0":
+            return false
+        default:
+            return nil
+        }
+    }
 }
