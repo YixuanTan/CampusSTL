@@ -9,14 +9,43 @@
     userDefault = [ "timeRemaining":"0",
                     "RIN":"meiyourin",
                     "checkedInRoomId":"0",
-                    "numberOfRoomCheckedIn:"0"]
+                    "numberOfRoomCheckedIn:"0",
+                    "expireTime":"0"]
 */
 
+//should delete countdown(), in viewdidload add a snippet to see if time is out: when timer didset, set a future date by adding timer to current date, when view did load check if surpasses this future date. If it is, show time is up alert.
+//infinite count down
 import UIKit
 import SpriteKit
 
 let serverURL = "52.90.85.173:3000"
-var timer = -1
+var expireTime: NSDate!
+var timer = -1 {
+    didSet {
+        if timer > 0 {
+            let notification1: UILocalNotification = UILocalNotification()
+            let notification2: UILocalNotification = UILocalNotification()
+            notification1.category = "News and Sports"
+            notification1.alertBody = "\(CONSTANTS.alertTimeLeft) minutes left!"
+            notification1.alertAction = "check out or add time"
+            notification1.soundName = UILocalNotificationDefaultSoundName
+            notification2.category = "News and Sports"
+            notification2.alertBody = "Time is up. You have been checked out."
+            notification2.soundName = UILocalNotificationDefaultSoundName
+            //notification2.alertAction = ""
+            
+            let date1 = NSDate().dateByAddingTimeInterval(Double(timer-CONSTANTS.alertTimeLeft)*60.0)
+            let date2 = NSDate().dateByAddingTimeInterval(Double(timer)*60.0)
+            notification1.fireDate = date1
+            notification2.fireDate = date2
+            UIApplication.sharedApplication().scheduleLocalNotification(notification1)
+            UIApplication.sharedApplication().scheduleLocalNotification(notification2)
+            expireTime = date2
+        }
+    }
+}
+
+var TIMEABOUTTOEXPIRE = false
 
 class ViewController: UIViewController, UIScrollViewDelegate {
     
@@ -27,9 +56,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     var floorButtons: [UIButton]!
     var allRoomData = NSMutableDictionary()//Dictionary<String, Dictionary<String, String> >()//roomNumber:[field: value]
     var floorShowing = 1
-    var checkedInRoom = Room()
-    var library = Building()
-    var user = Person()
     
     @IBOutlet weak var floorView: UIView!
     
@@ -42,13 +68,14 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         didSet {
             scrollView.contentSize = floorView.frame.size
             scrollView.delegate = self //declare delegation
-            scrollView.maximumZoomScale = 2.0
+            scrollView.maximumZoomScale = 2
             scrollView.minimumZoomScale = 1
         }
 
     }
     
     
+    @IBOutlet weak var floorViewRatioConstraint: NSLayoutConstraint!
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     
     @IBOutlet weak var floorOneButton: UIButton!
@@ -98,13 +125,37 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         if let roomNumber = userDefault.stringForKey("checkedInRoomId") {
             checkedInRoomId = roomNumber
         }
+        if userDefault.stringForKey("expireTime") != nil {
+            expireTime = convertStringtoDate(userDefault.stringForKey("expireTime")!)
+        }
+        if userDefault.stringForKey("TIMEABOUTTOEXPIRE") != nil {
+            TIMEABOUTTOEXPIRE = userDefault.stringForKey("TIMEABOUTTOEXPIRE")!.toBool()!
+        }
+        /*
         if let timeRemaining = userDefault.stringForKey("timeRemaining") {
             timer = Int(timeRemaining)!
         }
-        
-        clock = NSTimer.scheduledTimerWithTimeInterval(60.0, target: self, selector: "countDown", userInfo: nil, repeats: true)
+        */
+        clock = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "countDown", userInfo: nil, repeats: true)
     }
+    
 
+    func showTimeAboutToExpireAlert() {
+        let roomNumber = userDefault.stringForKey("checkedInRoomId")
+        let ac = UIAlertController(title: "\(CONSTANTS.alertTimeLeft) minutes left", message: "Please check out or add time", preferredStyle: .Alert)
+        ac.addAction(UIAlertAction(title: "Check out", style: .Default, handler: {(action)->Void  in
+            self.performSegueWithIdentifier("checkin", sender: roomNumber)
+        }))
+        ac.addAction(UIAlertAction(title: "Add time", style: .Default, handler: {(action)->Void  in
+            self.performSegueWithIdentifier("addTime", sender: roomNumber)
+        }))
+        ac.addAction(UIAlertAction(title: "OK", style: .Default, handler:nil))
+        presentViewController(ac, animated: true, completion: nil)
+    }
+    
+    func showTimeAlreadyExpiredAlert() {
+        
+    }
     
     func updateRINLabel() {
         let RIN = userDefault.stringForKey("RIN")
@@ -128,7 +179,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func resetNumberOfRoomCheckedIn() {
-        print(userDefault.stringForKey("checkedInRoomId"))
+        //print(userDefault.stringForKey("checkedInRoomId"))
         if userDefault.stringForKey("checkedInRoomId") != nil {
             checkedInRoomId = userDefault.stringForKey("checkedInRoomId")!
             if let checkedInRoom = allRoomData[checkedInRoomId] as? NSDictionary {
@@ -146,33 +197,29 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     override func viewDidAppear(animated: Bool) {
+        //print("view did appear")
         super.viewDidAppear(animated)
         floorButtonTapped(floorButtons[floorShowing-1])
     }
     
     func countDown() {
-        timer--
-        let roomNumber = userDefault.stringForKey("checkedInRoomId")
-        if timer == 1 {// should change back to 2
-            let ac = UIAlertController(title: "2 minutes left", message: "Please check out or add time", preferredStyle: .Alert)
-            ac.addAction(UIAlertAction(title: "Check out", style: .Default, handler: {(action)->Void  in
-                self.performSegueWithIdentifier("checkin", sender: roomNumber)
-            }))
-            ac.addAction(UIAlertAction(title: "Add time", style: .Default, handler: {(action)->Void  in
-                self.performSegueWithIdentifier("addTime", sender: roomNumber)
-            }))
-            ac.addAction(UIAlertAction(title: "OK", style: .Default, handler:nil))
-            presentViewController(ac, animated: true, completion: nil)
-        } else if timer == 0 {
-            automaticallyCheckout()
-        }
+        //if timer != -1 {
+            if expireTime?.compare(NSDate()) == NSComparisonResult.OrderedAscending {
+                automaticallyCheckout()
+                expireTime = nil
+                refresh()
+            } else if TIMEABOUTTOEXPIRE == true {
+                showTimeAboutToExpireAlert()
+                TIMEABOUTTOEXPIRE = false
+            }
+        //}
     }
     
     func automaticallyCheckout() {
         //yet to implement
         let roomNumber = userDefault.stringForKey("checkedInRoomId")!
         let url = NSURL(string: "http://\(serverURL)/rooms/\(roomNumber)")
-        print(url)
+        //print(url)
         let parameters = ["roomNumber":roomNumber,"occupied": "0","checkinTime":"-1","stayTime": "0","userId":"0"] as Dictionary<String, String>
         let config = NSURLSessionConfiguration.defaultSessionConfiguration()
         let session = NSURLSession(configuration: config)//sharedSession()
@@ -206,7 +253,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
 
     @IBAction func roomDidTapped(sender: UITapGestureRecognizer) {
-        print("touched")
+        //print("touched")
         let touchLocation = sender.locationOfTouch(0, inView: floorView)
         for oneRoom in floorView.subviews {
             let oneRoomFrame = oneRoom.frame//view.convertRect(oneRoom.frame, fromView: )
@@ -248,7 +295,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     @IBAction func didLongPress(sender: UILongPressGestureRecognizer) {
         if (sender.state == .Began) {
-            print("long pressed")
+            //print("long pressed")
             let touchLocation = sender.locationOfTouch(0, inView: floorView)
             
             for oneRoom in floorView.subviews {
@@ -346,10 +393,11 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                                     if let accomodationStr = roomInfo["capacity"] as? String {//read in from database
                                     //let chair = UIImage(named: "chair")
                                         if let accomodation = Int(accomodationStr) {
-                                            let chairViewWidth = roomView.frame.size.width/8
+                                            let chairViewWidth = CGFloat(Int(roomView.frame.size.width/6)-1)
                                             let chairViewHeight = roomView.frame.size.height/CGFloat(4)
                                             for i in 0 ..< accomodation {
-                                                let chairView = UIImageView(frame: CGRect(origin: CGPoint(x: (Int(chairViewWidth)+2)*i+1, y: Int(chairViewHeight*1.5)), size: CGSize(width: chairViewWidth, height: chairViewHeight)))
+                                                let coordX = Int(chairViewWidth)*i+1*(i+1)
+                                                let chairView = UIImageView(frame: CGRect(origin: CGPoint(x: coordX, y: Int(chairViewHeight*1.5)), size: CGSize(width: chairViewWidth, height: chairViewHeight)))
                                                 //chairView.image = chair
                                                 chairView.backgroundColor = UIColor.purpleColor()
                                                 roomView.addSubview(chairView)
@@ -384,7 +432,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                                                 availableTill.text = "Till \(hour):\(minutes)"
                                             }
                                             availableTill.textAlignment = .Left
-                                            availableTill.font = availableTill.font.fontWithSize(roomHeight/3.5)
+                                            availableTill.font = availableTill.font.fontWithSize(CGFloat(roomWidth)/CGFloat(availableTill.text!.characters.count)*1.8)
                                         }
                                     }
                                     roomView.addSubview(roomNumber)
@@ -465,6 +513,19 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         }
         //floorView.removeFromSuperview()
     }
-
+    
+    func scrollViewDidEndZooming(scrollView: UIScrollView, withView view: UIView?, atScale scale: CGFloat) {
+        //print("here")
+        if self.view.traitCollection.horizontalSizeClass == .Compact {
+            floorView.frame.origin.y = 0
+        }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        refresh()
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+    }
 }
 
