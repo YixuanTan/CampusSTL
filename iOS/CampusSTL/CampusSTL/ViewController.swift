@@ -18,7 +18,7 @@
 import UIKit
 import SpriteKit
 
-let serverURL = "52.90.85.173:3000"
+var serverURL = ""//"192.168.0.103:3000"
 var expireTime: NSDate!
 var timer = -1 {
     didSet {
@@ -48,7 +48,12 @@ var timer = -1 {
 var TIMEABOUTTOEXPIRE = false
 
 class ViewController: UIViewController, UIScrollViewDelegate {
-    
+    var testServerURL = "" {
+        didSet {
+            serverURL = testServerURL
+            continueLoading()
+        }
+    }
     let userDefault = NSUserDefaults.standardUserDefaults()
     var numberOfRoomCheckedIn = 0
     var checkedInRoomId = "0"//in checkedInRoom
@@ -113,10 +118,15 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         updateRINLabel()
     }
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         scrollView.addSubview(floorView)
         floorView.backgroundColor =  UIColor.grayColor()//UIColor(patternImage: UIImage(named: "chair.png")!)
+        loadServerURLAlertForTesting()
+    }
+    
+    func continueLoading() {
         readAllFromDatabase()//should update data every 1min or so
         floorButtons = [floorOneButton, floorTwoButton, floorThreeButton, floorFourButton]
         if let numberOfRoomCheckedInStr = userDefault.stringForKey("numberOfRoomCheckedIn") {
@@ -136,7 +146,21 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             timer = Int(timeRemaining)!
         }
         */
+        //floorButtonTapped(floorButtons[floorShowing-1])
         clock = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "countDown", userInfo: nil, repeats: true)
+        refresh()
+    }
+    
+    func loadServerURLAlertForTesting() {
+        let ac = UIAlertController(title: "Server Address", message: "Enter server url for testing", preferredStyle: .Alert)
+        ac.addTextFieldWithConfigurationHandler({ (textField) -> Void in
+            textField.text = ""
+        })
+        ac.addAction(UIAlertAction(title: "Enter", style: .Default, handler: {[unowned self] (action)->Void in
+            let textField = ac.textFields![0] as UITextField
+            self.testServerURL = "\(textField.text!):3000"
+        }))
+        presentViewController(ac, animated: true, completion:nil)
     }
     
 
@@ -199,7 +223,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     override func viewDidAppear(animated: Bool) {
         //print("view did appear")
         super.viewDidAppear(animated)
-        floorButtonTapped(floorButtons[floorShowing-1])
+        //floorButtonTapped(floorButtons[floorShowing-1])
     }
     
     func countDown() {
@@ -522,7 +546,9 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     override func viewDidLayoutSubviews() {
-        refresh()
+        if serverURL != "" {
+            refresh()
+        }
     }
     
     override func viewWillDisappear(animated: Bool) {
