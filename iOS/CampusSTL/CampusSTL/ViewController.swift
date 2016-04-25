@@ -18,7 +18,7 @@
 import UIKit
 import SpriteKit
 
-var serverURL = ""//"192.168.0.103:3000"
+var serverURL = "" //"192.168.0.100"//"192.168.0.103:3000"
 var expireTime: NSDate!
 var timer = -1 {
     didSet {
@@ -61,6 +61,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     var floorButtons: [UIButton]!
     var allRoomData = NSMutableDictionary()//Dictionary<String, Dictionary<String, String> >()//roomNumber:[field: value]
     var floorShowing = 1
+    var filter = Filter.getFilterInstance()
     
     @IBOutlet weak var floorView: UIView!
     
@@ -82,6 +83,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     @IBOutlet weak var floorViewRatioConstraint: NSLayoutConstraint!
     @IBOutlet weak var spinner: UIActivityIndicatorView!
+    @IBAction func filterButtonTapped(sender: UIBarButtonItem) {
+    }
+    @IBAction func filterButton(sender: UIBarButtonItem) {
+    }
     
     @IBOutlet weak var floorOneButton: UIButton!
     @IBOutlet weak var floorTwoButton: UIButton!
@@ -113,7 +118,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         removeAllRoomsFromCurrentFloor()
         readAllFromDatabase()
         while allRoomData.allKeys.count==0 {}
-        NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(0.2), target: self, selector: "stopSpinner", userInfo: nil, repeats: false)
+        NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(0.2), target: self, selector: #selector(ViewController.stopSpinner), userInfo: nil, repeats: false)
         loadFloor(floorShowing)
         updateRINLabel()
     }
@@ -124,6 +129,8 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         scrollView.addSubview(floorView)
         floorView.backgroundColor =  UIColor.grayColor()//UIColor(patternImage: UIImage(named: "chair.png")!)
         loadServerURLAlertForTesting()
+        //continueLoading()
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Filter", style: UIBarButtonItemStyle.Plain, target: self, action: #selector(ViewController.filterButtonTapped as (ViewController) -> () -> ()))
     }
     
     func continueLoading() {
@@ -152,6 +159,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func loadServerURLAlertForTesting() {
+        if serverURL != "" {
+            serverURL = serverURL + ":3000"
+            return
+        }
         let ac = UIAlertController(title: "Server Address", message: "Enter server url for testing", preferredStyle: .Alert)
         ac.addTextFieldWithConfigurationHandler({ (textField) -> Void in
             textField.text = ""
@@ -366,6 +377,14 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                 let roomWidth = (floorWidth-4)/maxNumberOfRoomsInARow-2
                 for (row, line) in lines.enumerate() {
                     for (column, oneRoomId) in line.componentsSeparatedByString(" ").enumerate() {
+                        //construct a room based on the data from the database
+                        var oneRoom = constructCurrentRoom(oneRoomId)
+                        //check the filter
+                        if oneRoom.isStudyRoom() {
+                            if filter.checkQualificationOfRoom(oneRoom) == false {
+                                continue
+                            }
+                        }
                         let position = CGPoint(x: (roomWidth+2)*CGFloat(column)+2, y: (roomHeight+2)*CGFloat(row)+2)//+floorView.frame.origin.y)
                         let roomView = UIView(frame: CGRect(origin: position, size: CGSize(width: roomWidth, height: roomHeight)))
                         let roomNumber = UILabel(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: roomWidth, height: CGFloat(roomHeight/3))))
@@ -413,6 +432,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                             default:
                                 roomView.backgroundColor =  UIColor.greenColor()//UIColor(patternImage: UIImage(named: "study.png")!)
                             //print("found study")
+                                
                                 if let roomInfo = allRoomData[roomNumber.text!] as? NSDictionary {
                                     if let accomodationStr = roomInfo["capacity"] as? String {//read in from database
                                     //let chair = UIImage(named: "chair")
@@ -500,6 +520,40 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         }
     }
     
+    func constructCurrentRoom(roomNumber: String) -> Room {
+        var oneRoom = Room(roomNumber: roomNumber)
+        if let roomInfo = allRoomData[roomNumber] as? NSDictionary {
+            if let capacityStr = roomInfo["capacity"] as? String {
+                if let capacity = Int(capacityStr) {
+                    oneRoom.capacity = capacity
+                }
+            }
+            if let isOccupied = roomInfo["occupied"] as? String {
+                if isOccupied == "1" {
+                    oneRoom.availability = false
+                } else {
+                    oneRoom.availability = true
+                }
+            }
+            if let numberOfWindowsStr = roomInfo["numberOfWindows"] as? String {
+                if let numberOfWindows = Int(numberOfWindowsStr) {
+                    oneRoom.numberOfWindows = numberOfWindows
+                }
+            }
+            if let numberOfBlackboardsStr = roomInfo["numberOfBlackboards"] as? String {
+                if let numberOfBlackboards = Int(numberOfBlackboardsStr) {
+                    oneRoom.numberOfBlackboards = numberOfBlackboards
+                }
+            }
+            if let numberOfOutletsStr = roomInfo["numberOfOutlets"] as? String {
+                if let numberOfOutlets = Int(numberOfOutletsStr) {
+                    oneRoom.numberOfOutlets = numberOfOutlets
+                }
+            }
+        }
+        return oneRoom
+    }
+    
     func openLink(link: String) {
         var requestUrl: NSURL?
         switch link {
@@ -528,6 +582,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             if segue.identifier == "addTime" {
                 dvc.roomNumber = roomNumber
             }
+        } else if let dvc = segue.destinationViewController as? FilterTableViewController {
+            if segue.identifier == "showFilter" {
+                
+            }
         }
     }
     
@@ -551,7 +609,8 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         }
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    func filterButtonTapped() {
+        performSegueWithIdentifier("showFilter", sender: nil)
     }
 }
 

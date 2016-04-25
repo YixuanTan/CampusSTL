@@ -121,6 +121,7 @@ class CheckinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                         }
                     }
                 }))
+                ac.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
                 presentViewController(ac, animated: true, completion: nil)
             }
         }
