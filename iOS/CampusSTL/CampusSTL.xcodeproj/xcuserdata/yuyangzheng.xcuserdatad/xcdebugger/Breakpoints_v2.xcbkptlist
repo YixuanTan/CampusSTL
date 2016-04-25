@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CampusSTL/ViewController.swift"
-            timestampString = "481758067.285151"
+            timestampString = "483225835.145665"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "504"
-            endingLineNumber = "504"
+            startingLineNumber = "558"
+            endingLineNumber = "558"
             landmarkName = "openLink(_:)"
             landmarkType = "5">
          </BreakpointContent>

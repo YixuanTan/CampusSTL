@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		E52BC1141C895B7F00C25A25 /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52BC1131C895B7F00C25A25 /* Helper.swift */; };
+		E55FEA131CC956A400DD182B /* FilterTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E55FEA121CC956A400DD182B /* FilterTableViewController.swift */; };
+		E55FEA151CC95C1800DD182B /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E55FEA141CC95C1800DD182B /* Filter.swift */; };
+		E55FEA171CC95CB800DD182B /* Room.swift in Sources */ = {isa = PBXBuildFile; fileRef = E55FEA161CC95CB800DD182B /* Room.swift */; };
 		E596836A1C9B86AE0048C828 /* water.png in Resources */ = {isa = PBXBuildFile; fileRef = E59683691C9B86AE0048C828 /* water.png */; };
 		E596836C1C9B97120048C828 /* food.png in Resources */ = {isa = PBXBuildFile; fileRef = E596836B1C9B97120048C828 /* food.png */; };
 		E596836E1C9B98C10048C828 /* frontDesk.png in Resources */ = {isa = PBXBuildFile; fileRef = E596836D1C9B98C10048C828 /* frontDesk.png */; };
@@ -32,6 +35,9 @@
 
 /* Begin PBXFileReference section */
 		E52BC1131C895B7F00C25A25 /* Helper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
+		E55FEA121CC956A400DD182B /* FilterTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterTableViewController.swift; sourceTree = "<group>"; };
+		E55FEA141CC95C1800DD182B /* Filter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
+		E55FEA161CC95CB800DD182B /* Room.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Room.swift; sourceTree = "<group>"; };
 		E59683691C9B86AE0048C828 /* water.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = water.png; sourceTree = "<group>"; };
 		E596836B1C9B97120048C828 /* food.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = food.png; sourceTree = "<group>"; };
 		E596836D1C9B98C10048C828 /* frontDesk.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = frontDesk.png; sourceTree = "<group>"; };
@@ -111,6 +117,9 @@
 				E5D542101C8791A0006A1CFD /* ViewController.swift */,
 				E5D5426C1C889F4C006A1CFD /* CheckinViewController.swift */,
 				E5B39DC31C940F2600FAA845 /* addTimeViewController.swift */,
+				E55FEA121CC956A400DD182B /* FilterTableViewController.swift */,
+				E55FEA141CC95C1800DD182B /* Filter.swift */,
+				E55FEA161CC95CB800DD182B /* Room.swift */,
 				E52BC1131C895B7F00C25A25 /* Helper.swift */,
 				E5D5420E1C8791A0006A1CFD /* AppDelegate.swift */,
 				E5D542151C8791A0006A1CFD /* Assets.xcassets */,
@@ -205,7 +214,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E55FEA151CC95C1800DD182B /* Filter.swift in Sources */,
 				E5D542111C8791A0006A1CFD /* ViewController.swift in Sources */,
+				E55FEA171CC95CB800DD182B /* Room.swift in Sources */,
+				E55FEA131CC956A400DD182B /* FilterTableViewController.swift in Sources */,
 				E5D5426D1C889F4C006A1CFD /* CheckinViewController.swift in Sources */,
 				E5D5420F1C8791A0006A1CFD /* AppDelegate.swift in Sources */,
 				E5B39DC41C940F2600FAA845 /* addTimeViewController.swift in Sources */,
